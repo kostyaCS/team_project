@@ -16,6 +16,7 @@ def count(start: int, step=1) -> Iterator | str:
     :type step: int
     :return: infinite loop iterator
     """
+    assert isinstance(start, int), 'Type valid type of parametr(int).'
     default_step = 0
     while True:
         if step:
@@ -34,9 +35,11 @@ def cycle(iterable: Iterable) -> Iterator:
     :type iterable: Iterable
     :return: infinite loop iterator
     """
+    assert isinstance(iterable, Iterable), 'Type valid type of parametr(iterable).'
     while True:
         for i in iterable:
             yield i
+
 
 def repeat(value):
     """
