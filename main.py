@@ -52,3 +52,25 @@ def repeat(value):
     """
     while True:
         yield value
+        
+def combinations_with_replacement(iterable, lenth):
+    """
+    Return r length subsequences of elements from the input
+    iterable allowing individual elements to be repeated more than once.
+    >>> print(list(combinations_with_replacement('ABC', 2)))
+    [('A', 'A'), ('A', 'B'), ('A', 'C'), ('B', 'B'), ('B', 'C'), ('C', 'C')]
+    >>> print(list(combinations_with_replacement('MATH', 3)))
+    [('M', 'M', 'M'), ('M', 'M', 'A'), ('M', 'M', 'T'), ('M', 'M', 'H'), ('M', 'A', 'A'),\
+ ('M', 'A', 'T'), ('M', 'A', 'H'), ('M', 'T', 'T'), ('M', 'T', 'H'), ('M', 'H', 'H'),\
+ ('A', 'A', 'A'), ('A', 'A', 'T'), ('A', 'A', 'H'), ('A', 'T', 'T'), ('A', 'T', 'H'),\
+ ('A', 'H', 'H'), ('T', 'T', 'T'), ('T', 'T', 'H'), ('T', 'H', 'H'), ('H', 'H', 'H')]
+    >>> print(list(combinations_with_replacement('33231', 2)))
+    [('3', '3'), ('3', '3'), ('3', '2'), ('3', '3'), ('3', '1'), ('3', '3'), ('3', '2'),\
+ ('3', '3'), ('3', '1'), ('2', '2'), ('2', '3'), ('2', '1'), ('3', '3'), ('3', '1'), ('1', '1')]
+    """
+    elements = tuple(i for i in iterable)
+    lst = product2(range(len(elements)), repeat = lenth)
+    for tup in lst:
+        sort_tup = tuple(el for el in sorted(tup))
+        if sort_tup == tup:
+            yield tuple(elements[i] for i in tup)
