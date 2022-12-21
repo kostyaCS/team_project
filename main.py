@@ -9,7 +9,6 @@ def count(start: int, step=1) -> Iterator | str:
     """
     Function that replace itertool's count method.
     The given one returns an endless iterator with given start and step, if needed(step is optional)
-
     :param start: the number, which is a start of the iteration
     :type start: int
     :param step: the step through which the iteration will occur
@@ -30,12 +29,13 @@ def cycle(iterable: Iterable) -> Iterator:
     """
     Function that replace itertool's cycle method
     Returns an endless iterator by looping through the values of the iterator "iterable"
-
     :param iterable: the iterated object on which the iteration will take place
     :type iterable: Iterable
     :return: infinite loop iterator
     """
     assert isinstance(iterable, Iterable), 'Type valid type of parametr(iterable).'
+    if len(iterable) < 1:
+        return
     while True:
         for i in iterable:
             yield i
@@ -45,7 +45,6 @@ def repeat(value):
     """
     Function that replace itertool's repeat method
     Returns an infinite iterator of repeated value values
-
     :param value: value which will be iterate
     :type value: any
     :return: infinite loop operator
@@ -54,75 +53,12 @@ def repeat(value):
         yield value
 
 
-def combinations_with_replacement(iterable, lenth):
-    """
-    Return r length subsequences of elements from the input
-    iterable allowing individual elements to be repeated more than once.
-    >>> print(list(combinations_with_replacement('ABC', 2)))
-    [('A', 'A'), ('A', 'B'), ('A', 'C'), ('B', 'B'), ('B', 'C'), ('C', 'C')]
-    >>> print(list(combinations_with_replacement('MATH', 3)))
-    [('M', 'M', 'M'), ('M', 'M', 'A'), ('M', 'M', 'T'), ('M', 'M', 'H'), ('M', 'A', 'A'),\
- ('M', 'A', 'T'), ('M', 'A', 'H'), ('M', 'T', 'T'), ('M', 'T', 'H'), ('M', 'H', 'H'),\
- ('A', 'A', 'A'), ('A', 'A', 'T'), ('A', 'A', 'H'), ('A', 'T', 'T'), ('A', 'T', 'H'),\
- ('A', 'H', 'H'), ('T', 'T', 'T'), ('T', 'T', 'H'), ('T', 'H', 'H'), ('H', 'H', 'H')]
-    >>> print(list(combinations_with_replacement('33231', 2)))
-    [('3', '3'), ('3', '3'), ('3', '2'), ('3', '3'), ('3', '1'), ('3', '3'), ('3', '2'),\
- ('3', '3'), ('3', '1'), ('2', '2'), ('2', '3'), ('2', '1'), ('3', '3'), ('3', '1'), ('1', '1')]
-    """
-    elements = tuple(i for i in iterable)
-    lst = product2(range(len(elements)), repeat = lenth)
-    for tup in lst:
-        sort_tup = tuple(el for el in sorted(tup))
-        if sort_tup == tup:
-            yield tuple(elements[i] for i in tup)
-
-
-def permutations(iterable, length=None):
-    """
-    Function that replaces itertool`s permutations method.
-    Returns an iterator of permutations. If length is given,
-    returns permutations of a given length.
-
-    :param iterable: an object to permutate
-    :type iterable: any
-    :param length: length of a permutation
-    :type length: int
-    :return: infinite loop iterator
-    """
-    tuple_of_iterables = tuple(iterable)
-    tuple_length = len(tuple_of_iterables)
-    if length is None:
-        tuple_length = length
-    if length > tuple_length:
-        return None
-    indices = [i for i in range(tuple_length)]
-    cycles = [i for i in range(tuple_length, tuple_length-length, -1)]
-    yield tuple(tuple_of_iterables[i] for i in indices[:length])
-    while tuple_length:
-        for i in range(length)[::-1]:
-            cycles[i] -= 1
-            if cycles[i] == 0:
-                indices[i:] = indices[i+1:] + indices[i:i+1]
-                cycles[i] = tuple_length - i
-            else:
-                j = cycles[i]
-                indices[i], indices[-j] = indices[-j], indices[i]
-                yield tuple(tuple_of_iterables[i] for i in indices[:length])
-                break
-        else:
-            return None
-
-        
- def product2(*args, **kwds):
+def product(*args, **kwds):
     '''
     :param int args: Set or sets, which should be turned into cartesian product
     :param dict kwds: Number od repetotions
     :returns:  cartesian product of sets
     :rtype: list(tuple)
-    >>> list(product(range(2), repeat=3))
-    [(0, 0, 0), (0, 0, 1), (0, 1, 0), (0, 1, 1), (1, 0, 0), (1, 0, 1), (1, 1, 0), (1, 1, 1)]
-    >>> list(product('ABCD', 'xy'))
-    [('A', 'x'), ('A', 'y'), ('B', 'x'), ('B', 'y'), ('C', 'x'), ('C', 'y'), ('D', 'x'), ('D', 'y')]
     '''
     def recursive(arg_list: list):
         '''
@@ -140,8 +76,94 @@ def permutations(iterable, length=None):
         pools = list(map(list, args)) * kwds['repeat']
     except KeyError:
         pools = list(map(list, args))
-    result = list(recursive(pools))
+    for i in  list(recursive(pools)):
+        yield i
 
-    return result
 
-  
+
+def combinations(iterable: str | list | tuple, length: int):
+    """
+    Returns a generator of combinations from n to r elements in a sorted order
+    :param iterable: an object to combinate
+    :type iterable: iterable
+    :param length: length of a combination
+    :type length: int
+    :return: infinite loop iterator
+    """
+    if not isinstance(iterable, str) and not isinstance(iterable, list) \
+        and not isinstance(iterable, tuple):
+        return
+    if not isinstance(length, int):
+        return
+    iterable_length = len(iterable)
+    if length > iterable_length:
+        return
+    indices = list(i for i in range(length))
+    rev_indices = indices[::-1]
+    yield tuple(iterable[i] for i in indices)
+
+    while True:
+        flag = False
+        for i in rev_indices:
+            if indices[i] != iterable_length - length + i:
+                flag = True
+                break
+        if not flag:
+            return
+        indices[i] += 1
+        for j in range(i+1, length):
+            indices[j] = indices[j - 1] + 1
+        yield tuple(iterable[i] for i in indices)
+
+
+def combinations_with_replacement(iterable:Iterable, length:int):
+    """
+    Return r length subsequences of elements from the input
+    iterable allowing individual elements to be repeated more than once.
+    """
+    assert isinstance(iterable, Iterable), 'Type valid type of parametr(iterable).'
+    assert isinstance(length, int), 'Type valid type of parametr(int).'
+    elements = tuple(i for i in iterable)
+    lst = product(range(len(elements)), repeat=length)
+    for tuple_ in lst:
+        sort_tup = tuple(el for el in sorted(tuple_))
+        if sort_tup == tuple_:
+            yield tuple(elements[i] for i in tuple_)
+
+
+def permutations(iterable:Iterable, length=None):
+    """
+    Function that replaces itertool`s permutations method.
+    Returns an iterator of permutations. If length is given,
+    returns permutations of a given length.
+    :param iterable: an object to permutate
+    :type iterable: iterable
+    :param length: length of a permutation
+    :type length: int
+    :return: infinite loop iterator
+    """
+    assert isinstance(iterable, Iterable), 'Type valid type of parametr(iterable).'
+
+    tuple_of_iterables = tuple(iterable)
+    tuple_length = len(tuple_of_iterables)
+    if length is None:
+        length = tuple_length
+    if not length is None:
+        if length > tuple_length:
+            return None
+    indices = [i for i in range(tuple_length)]
+    cycles = [i for i in range(tuple_length, tuple_length-length, -1)]
+    yield tuple(tuple_of_iterables[i] for i in indices[:length])
+    while tuple_length:
+        for i in range(length)[::-1]:
+            cycles[i] -= 1
+            if cycles[i] == 0:
+                indices[i:] = indices[i+1:] + indices[i:i+1]
+                cycles[i] = tuple_length - i
+            else:
+                j = cycles[i]
+                indices[i], indices[-j] = indices[-j], indices[i]
+                yield tuple(tuple_of_iterables[i] for i in indices[:length])
+                break
+        else:
+            return None
