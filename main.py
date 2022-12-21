@@ -52,7 +52,8 @@ def repeat(value):
     """
     while True:
         yield value
-        
+
+
 def combinations_with_replacement(iterable, lenth):
     """
     Return r length subsequences of elements from the input
@@ -74,3 +75,40 @@ def combinations_with_replacement(iterable, lenth):
         sort_tup = tuple(el for el in sorted(tup))
         if sort_tup == tup:
             yield tuple(elements[i] for i in tup)
+
+
+def permutations(iterable, length=None):
+    """
+    Function that replaces itertool`s permutations method.
+    Returns an iterator of permutations. If length is given,
+    returns permutations of a given length.
+
+    :param iterable: an object to permutate
+    :type iterable: any
+    :param length: length of a permutation
+    :type length: int
+    :return: infinite loop iterator
+    """
+    tuple_of_iterables = tuple(iterable)
+    tuple_length = len(tuple_of_iterables)
+    if length is None:
+        tuple_length = length
+    if length > tuple_length:
+        return None
+    indices = [i for i in range(tuple_length)]
+    cycles = [i for i in range(tuple_length, tuple_length-length, -1)]
+    yield tuple(tuple_of_iterables[i] for i in indices[:length])
+    while tuple_length:
+        for i in range(length)[::-1]:
+            cycles[i] -= 1
+            if cycles[i] == 0:
+                indices[i:] = indices[i+1:] + indices[i:i+1]
+                cycles[i] = tuple_length - i
+            else:
+                j = cycles[i]
+                indices[i], indices[-j] = indices[-j], indices[i]
+                yield tuple(tuple_of_iterables[i] for i in indices[:length])
+                break
+        else:
+            return None
+  
